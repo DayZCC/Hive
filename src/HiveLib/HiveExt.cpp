@@ -76,6 +76,7 @@ HiveExtApp::HiveExtApp(string suffixDir) : AppServer("HiveExt", suffixDir), _ser
 	// Character updates
 	handlers[201] = boost::bind(&HiveExtApp::playerUpdate, this, _1);
 	handlers[202] = boost::bind(&HiveExtApp::playerDeath, this, _1);
+	handlers[203] = boost::bind(&HiveExtApp::playerInit, this, _1);
 
 	// Custom procedures
 	handlers[998] = boost::bind(&HiveExtApp::customExecute, this, _1);
@@ -535,6 +536,14 @@ Sqf::Value HiveExtApp::playerDeath(Sqf::Parameters params)
 	int duration = static_cast<int>(Sqf::GetDouble(params.at(1)));
 	
 	return ReturnStatus(_charData->killCharacter(characterId, duration));
+}
+
+Sqf::Value HiveExtApp::playerInit(Sqf::Parameters params) {
+	int characterId = Sqf::GetIntAny(params.at(0));
+	Sqf::Value inventory = boost::get<Sqf::Parameters>(params.at(1));
+	Sqf::Value backpack = boost::get<Sqf::Parameters>(params.at(2));
+
+	return ReturnStatus(_charData->initCharacter(characterId, inventory, backpack));
 }
 
 Sqf::Value HiveExtApp::customExecute(Sqf::Parameters params)

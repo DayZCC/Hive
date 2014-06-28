@@ -12,6 +12,7 @@ public:
 	typedef map<string, Sqf::Value> FieldsType;
 	virtual bool updateCharacter( int characterId, const FieldsType& fields ) = 0;
 	virtual bool killCharacter( int characterId, int duration ) = 0;
+	virtual bool initCharacter( int characterId, const Sqf::Value& inventory, const Sqf::Value& backpack ) = 0;
 	virtual bool recordLogEntry( string playerId, int characterId, int serverId, int action ) = 0;
 
 protected:

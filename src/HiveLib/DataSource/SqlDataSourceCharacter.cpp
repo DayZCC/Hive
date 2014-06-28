@@ -149,9 +149,9 @@ Sqf::Value SqlCharDataSource::fetchCharacterInitial(string playerId, int serverI
 		// Insert new character
 		{
 			SqlStatementID stmt_id;
-			auto stmt = getDB()->makeStatement(stmt_id, "insert into `survivor` (`unique_id`, `start_time`, `world_id`, `worldspace`, `inventory`, `backpack`, `medical`) select ?, now(), i.`world_id`, ?, i.`inventory`, i.`backpack`, ? from `instance` i where i.`id` = ?");
+			auto stmt = getDB()->makeStatement(stmt_id, "insert into `survivor` (`unique_id`, `start_time`, `world_id`, `inventory`, `backpack`, `medical`) select ?, now(), i.`world_id`, i.`inventory`, i.`backpack`, ? from `instance` i where i.`id` = ?");
 			stmt->addString(playerId);
-			stmt->addString(lexical_cast<string>(worldSpace));
+//			stmt->addString(lexical_cast<string>(worldSpace));
 			stmt->addString("[false,false,false,false,false,false,false,12000,[],[0,0],0]");
 			stmt->addInt32(serverId);
 
@@ -187,10 +187,12 @@ Sqf::Value SqlCharDataSource::fetchCharacterInitial(string playerId, int serverI
 	retVal.push_back(string("PASS"));
 	retVal.push_back(newPlayer);
 	retVal.push_back(lexical_cast<string>(characterId));
-	retVal.push_back(worldSpace);
-	retVal.push_back(inventory);
-	retVal.push_back(backpack);
-	retVal.push_back(survival);
+	if (!newChar) {
+		retVal.push_back(worldSpace);
+		retVal.push_back(inventory);
+		retVal.push_back(backpack);
+		retVal.push_back(survival);
+	}
 	retVal.push_back(model);
 	retVal.push_back(0.96f);
 
@@ -385,6 +387,20 @@ bool SqlCharDataSource::killCharacter(int characterId, int duration)
 
 	return exRes;
 }
+
+bool SqlCharDataSource::initCharacter(int characterId, const Sqf::Value& inventory, const Sqf::Value& backpack) {
+	SqlStatementID stmt_id;
+
+	auto stmt = getDB()->makeStatement(stmt_id, "UPDATE `survivor` SET `inventory` = ? , `backpack` = ? WHERE `id` = ?");
+	stmt->addString(lexical_cast<string>(inventory));
+	stmt->addString(lexical_cast<string>(backpack));
+	stmt->addInt32(characterId);
+	bool exRes = stmt->execute();
+	poco_assert(exRes == true);
+
+	return exRes;
+}
+
 bool SqlCharDataSource::recordLogEntry(string playerId, int characterId, int serverId, int action)
 {
 	SqlStatementID stmt_id;
